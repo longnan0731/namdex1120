@@ -1,0 +1,29 @@
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor & IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Backup and Temporary Files
+*.bak
+*backup*
+*+*.html
+*+*.js
+*+*.css
+test_cors_log.html
+__MACOSX/
+
+# Archive Files
+*.zip
+*.tar.gz
+*.rar

@@ -611,7 +611,7 @@
       if (stepBadge) {
         stepBadge.textContent = step.label;
       }
-      document.querySelectorAll('.sim-pin, .sim-pill-btn').forEach((el) => {
+      document.querySelectorAll('.sim-pin, .sim-pill-btn, .inspect-pin-card').forEach((el) => {
         const attrVal = el.getAttribute('data-sim-step') ?? el.getAttribute('data-sim-idx');
         const elStep = parseInt(attrVal, 10);
         el.classList.toggle('active', elStep === sIdx);
@@ -625,7 +625,7 @@
       }, 2600);
     }
 
-    if (touchEl && stepBadge) {
+    if (touchEl || highlightBox) {
       applyStep(0);
       startTimer();
 
@@ -1000,11 +1000,10 @@
     { id: 'sec-inspect', title: '02. 요소 탐색 · Appium & XML/ID', shelfIdx: 1, slideIdx: 2 },
     { id: 'sec-yaml', title: '03. 수동 코딩 · YAML & 화면 매핑', shelfIdx: 2, slideIdx: 3 },
     { id: 'sec-aita', title: '04. AITA & AI · 아키텍처 & 방어 룰', shelfIdx: 3, slideIdx: 4 },
-    { id: 'sec-verify', title: '05. 단건 확인 · 스모크 & 동작 검증', shelfIdx: 4, slideIdx: 5 },
-    { id: 'sec-batch', title: '06. 배치 실행 · 설계 프로세스 & 연동', shelfIdx: 5, slideIdx: 6 },
-    { id: 'sec-results', title: '07. 실행 결과 · 240 Pass 무결점', shelfIdx: 6, slideIdx: 7 },
-    { id: 'sec-compare', title: '08. 도입 전후 비교 · 수동 vs 자동화', shelfIdx: 7, slideIdx: 8 },
-    { id: 'sec-summary', title: '09. 총결 및 로드맵 · 성과 & 확장 계획', shelfIdx: 8, slideIdx: 9 }
+    { id: 'sec-batch', title: '05. 배치 실행 · 사전 검증 & E2E 파이프라인', shelfIdx: 4, slideIdx: 5 },
+    { id: 'sec-results', title: '06. 실행 결과 · 240건 자동 완주', shelfIdx: 5, slideIdx: 6 },
+    { id: 'sec-compare', title: '07. 도입 전후 비교 · 수동 vs 자동화', shelfIdx: 6, slideIdx: 7 },
+    { id: 'sec-summary', title: '08. 총결 및 로드맵 · 성과 & 확장 계획', shelfIdx: 7, slideIdx: 8 }
   ];
 
   /* ========================================================================
@@ -1253,7 +1252,40 @@
     const vi = document.getElementById('splash-video-ide');
     if (vp) { vp.loop = true; vp.muted = true; vp.currentTime = 0; vp.play().catch(() => {}); }
     if (vi) { vi.loop = true; vi.muted = true; vi.currentTime = 0; vi.play().catch(() => {}); }
+    setTimeout(syncSplashDeviceHeights, 50);
   };
+
+  // Symmetrically sync Splash Page 2 MacBook IDE and iPhone Heights
+  function syncSplashDeviceHeights() {
+    const macbookWrap = document.querySelector('.macbook-device-wrap');
+    const iphoneFrame = document.querySelector('.splash-phone-card .splash-iphone-frame');
+    if (!macbookWrap || !iphoneFrame) return;
+
+    if (window.innerWidth <= 980) {
+      iphoneFrame.style.height = '';
+      iphoneFrame.style.width = '';
+      return;
+    }
+
+    const h = macbookWrap.offsetHeight;
+    if (h > 200) {
+      iphoneFrame.style.height = h + 'px';
+      // Proportional width preserving iPhone display ratio with 12px bezel
+      const w = Math.round((h - 24) * (390 / 844) + 24);
+      iphoneFrame.style.width = w + 'px';
+    }
+  }
+
+  window.syncSplashDeviceHeights = syncSplashDeviceHeights;
+  window.addEventListener('resize', syncSplashDeviceHeights);
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(syncSplashDeviceHeights);
+    const mb = document.querySelector('.macbook-device-wrap');
+    if (mb) ro.observe(mb);
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(syncSplashDeviceHeights, 150);
+  });
 
   window.closeHeroSplash = function () {
     const splash = document.getElementById('apple-hero-splash');
@@ -1570,6 +1602,45 @@
     modal.classList.add('open');
   };
 
+  /* Universal Image Lightbox with optional title caption */
+  window.openImageLightbox = function (src, title) {
+    const modal = document.getElementById('lightbox-modal');
+    const body = document.getElementById('lightbox-body');
+    if (!modal || !body) return;
+    body.innerHTML = '';
+
+    const container = document.createElement('div');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'center';
+    container.style.maxWidth = '95vw';
+
+    if (title) {
+      const header = document.createElement('div');
+      header.style.color = '#ffffff';
+      header.style.fontSize = '14px';
+      header.style.fontWeight = '600';
+      header.style.marginBottom = '12px';
+      header.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Apple SD Gothic Neo', sans-serif";
+      header.innerHTML = '<span style="color:#0a84ff;">✦ 원본 고해상도 확대:</span> ' + title;
+      container.appendChild(header);
+    }
+
+    const img = document.createElement('img');
+    img.id = 'lightbox-active-img';
+    img.src = src;
+    img.alt = title || 'Expanded Image';
+    img.style.maxWidth = '92vw';
+    img.style.maxHeight = '82vh';
+    img.style.objectFit = 'contain';
+    img.style.borderRadius = '16px';
+    img.style.boxShadow = '0 24px 80px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.1)';
+    container.appendChild(img);
+
+    body.appendChild(container);
+    modal.classList.add('open');
+  };
+
 
   /* ==========================================================================
      Apple Comparison Showcase Interactive Controls & Keynote Transition FX
@@ -1639,34 +1710,36 @@
     const t1Sub = document.getElementById('tile1-sub');
     const t1Badge = document.getElementById('tile1-badge');
     const t1Headline = document.getElementById('tile1-headline');
-    const t1Subtext = document.getElementById('tile1-subtext');
 
     if (mode === 'auto') {
-      if (t1Top) t1Top.innerHTML = '<span class="compare-tag-old">수동 284개 전수</span> ➔ <span class="compare-tag-new">240개 전수 자동화 달성 (물리 단말 제외)</span>';
+      if (t1Top) t1Top.innerHTML = '<span class="compare-tag-old">수동 284개 전수</span> ➔ <span class="compare-tag-new">230개 전수 자동화 달성 (물리 단말 제외)</span>';
       if (t1Radial) {
         t1Radial.style.stroke = '#30d158';
-        t1Radial.style.strokeDashoffset = '42.85'; // 84.5% fill
+        t1Radial.style.strokeDashoffset = '52.56'; // 81% fill (230/284)
       }
+      const metricWrap1 = document.querySelector('#bento-tile-1 .apple-radial-metric');
+      if (metricWrap1) metricWrap1.classList.add('breathing-glow');
       if (t1Val) {
         t1Val.style.color = '#ffffff';
-        animateNumberValue(t1Val, 0, 84.5, 650, '%', 1);
+        animateNumberValue(t1Val, 0, 81, 650, '%', 0);
       }
       if (t1Sub) {
         t1Sub.textContent = 'COVERAGE';
         t1Sub.style.color = '#30d158';
       }
-      if (t1Badge) t1Badge.innerHTML = '<span class="auto-delta-badge">⚡ +84.5% 전수 자동화 구축 달성</span>';
-      if (t1Headline) t1Headline.innerHTML = '<span class="old-struck">수기 284개 클릭</span> ➔ 전체 284개 중 240개 자동화';
-      if (t1Subtext) t1Subtext.textContent = '외부 메일·카메라 등 물리 검증(44개)을 제외한 전 영역 자동화 구축';
+      if (t1Badge) t1Badge.innerHTML = '<span class="auto-delta-badge">⚡ 230개 전수 자동화 구축 달성</span>';
+      if (t1Headline) t1Headline.innerHTML = '<span class="old-struck">수기 284개 클릭</span> ➔ 전체 284개 중 230개 자동화 (81%)';
     } else {
       if (t1Top) t1Top.textContent = '기존 수동 리그레션 검증 방식';
       if (t1Radial) {
         t1Radial.style.stroke = '#ff9f0a';
         t1Radial.style.strokeDashoffset = '276.46'; // 0%
       }
+      const metricWrap1 = document.querySelector('#bento-tile-1 .apple-radial-metric');
+      if (metricWrap1) metricWrap1.classList.remove('breathing-glow');
       if (t1Val) {
         t1Val.style.color = '#ff9f0a';
-        animateNumberValue(t1Val, 84.5, 0, 450, '%', 0);
+        animateNumberValue(t1Val, 81, 0, 450, '%', 0);
       }
       if (t1Sub) {
         t1Sub.textContent = 'MANUAL';
@@ -1674,7 +1747,6 @@
       }
       if (t1Badge) t1Badge.innerHTML = '<span class="manual-center-badge">수기 284개 TC 전수 점검</span>';
       if (t1Headline) t1Headline.textContent = '전체 284개 TC 일일이 수기 클릭';
-      if (t1Subtext) t1Subtext.textContent = '테스터가 화면을 직접 터치하며 눈으로 확인하는 전통적 방식';
     }
   }
 
@@ -1684,162 +1756,85 @@
     const t2AutoView = document.getElementById('tile2-auto-view');
     const t2Badge = document.getElementById('tile2-badge');
     const t2Headline = document.getElementById('tile2-headline');
-    const t2Stat = document.getElementById('tile2-stat');
-    const t2Subtext = document.getElementById('tile2-subtext');
 
     if (mode === 'auto') {
-      if (t2Top) t2Top.innerHTML = '<span class="compare-tag-old">휴먼 에러 위험</span> ➔ <span class="compare-tag-new">26가지 스마트 방어 로직 엔진 탑재</span>';
+      if (t2Top) t2Top.innerHTML = '<span class="compare-tag-old">수동 8시간+ 소요</span> ➔ <span class="compare-tag-new">최대 2시간 완주</span>';
       if (t2ManualView) t2ManualView.style.display = 'none';
       if (t2AutoView) t2AutoView.style.display = 'flex';
-      if (t2Badge) t2Badge.innerHTML = '<span class="auto-delta-badge chip-delta">🛡️ 26가지 방어 로직으로 Flaky 0건</span>';
-      if (t2Headline) t2Headline.innerHTML = '<span class="old-struck">오검증·누락 위험</span> ➔ 플레이키(Flaky) 실패 0건';
-      if (t2Stat) {
-        t2Stat.textContent = 'Pass Rate 100% (240 Passed)';
-        t2Stat.style.color = '#30d158';
-      }
-      if (t2Subtext) t2Subtext.textContent = '오터치 · 딜레이 · 화면 렌더링 방어 로직 전격 적용';
+      if (t2Badge) t2Badge.innerHTML = '<span class="auto-delta-badge">⚡ 75% 시간 절감 (6시간 세이브)</span>';
+      if (t2Headline) t2Headline.innerHTML = '<span class="old-struck">8시간+ 전일 소요</span> ➔ 단 2시간 전수 완주';
     } else {
-      if (t2Top) t2Top.textContent = '수기 검증의 피로도 & 재현성 한계';
+      if (t2Top) t2Top.textContent = '기존 수동 검증 소요 시간';
       if (t2ManualView) t2ManualView.style.display = 'flex';
       if (t2AutoView) t2AutoView.style.display = 'none';
-      if (t2Badge) t2Badge.innerHTML = '<span class="manual-center-badge warn">피로도 누적 시 오검증 위험</span>';
-      if (t2Headline) t2Headline.textContent = '휴먼 에러(Human Error) 위험 상존';
-      if (t2Stat) {
-        t2Stat.textContent = '장시간 단순 반복 검증 시 집중도 저하';
-        t2Stat.style.color = '#ff9f0a';
-      }
-      if (t2Subtext) t2Subtext.textContent = '오터치, 네트워크 지연 시 예외 상황 대처를 사람이 수작업 판단';
+      if (t2Badge) t2Badge.innerHTML = '<span class="manual-center-badge warn">1인 전일(Full-Day) 소요</span>';
+      if (t2Headline) t2Headline.textContent = '최소 8시간 이상 전일 수기 검증';
     }
   }
 
   function updateTile3DOM(mode) {
     const t3Top = document.getElementById('tile3-top');
-    const t3Prefix = document.getElementById('tile3-prefix');
-    const t3Hero = document.getElementById('tile3-hero');
-    const t3BatteryLabel = document.getElementById('tile3-battery-label');
-    const t3BatteryPill = document.getElementById('tile3-battery-pill');
-    const t3BatteryBar = document.getElementById('tile3-battery-bar');
-    const t3BadgeWrap = document.getElementById('tile3-badge-wrap');
+    const t3ManualView = document.getElementById('tile3-manual-view');
+    const t3AutoView = document.getElementById('tile3-auto-view');
+    const t3Badge = document.getElementById('tile3-badge');
     const t3Headline = document.getElementById('tile3-headline');
-    const t3Subtext = document.getElementById('tile3-subtext');
 
     if (mode === 'auto') {
-      if (t3Top) t3Top.innerHTML = '<span class="compare-tag-old">수동 8시간+ 소요</span> ➔ <span class="compare-tag-new">최대 2시간 완주</span>';
-      if (t3Prefix) t3Prefix.textContent = '최대';
-      if (t3Hero) {
-        t3Hero.textContent = '자동화 2시간';
-        t3Hero.style.color = '#ffffff';
-      }
-      if (t3BatteryLabel) {
-        animateTimeMorph(t3BatteryLabel, '8h 00m', '완주 (2h)');
-        t3BatteryLabel.style.color = '#f5f5f7';
-      }
-      if (t3BatteryPill) t3BatteryPill.style.borderColor = '#30d158';
-      if (t3BatteryBar) {
-        t3BatteryBar.style.background = '#30d158';
-        t3BatteryBar.style.boxShadow = '0 0 6px rgba(48,209,88,0.4)';
-        t3BatteryBar.style.width = '90%';
-      }
-      if (t3BadgeWrap) t3BadgeWrap.innerHTML = '<span class="auto-delta-badge time-delta">⚡ 6시간 단축 (-75%) · 실측 7,151,612 ms (2h 00m)</span>';
-      if (t3Headline) t3Headline.innerHTML = '<span class="old-struck">수동 8시간 소진</span> ➔ 실측 2시간 완주';
-      if (t3Subtext) t3Subtext.textContent = '67개 Suite 실기기 배치 실행부터 TestRail 전 스텝 로그 기입까지';
+      if (t3Top) t3Top.innerHTML = '<span class="compare-tag-old">반복 검증에 고갈</span> ➔ <span class="compare-tag-new">고부가가치 창의적 테스팅으로 전환</span>';
+      if (t3ManualView) t3ManualView.style.display = 'none';
+      if (t3AutoView) t3AutoView.style.display = 'flex';
+      if (t3Badge) t3Badge.innerHTML = '<span class="auto-delta-badge">🌟 고부가가치 품질 고도화</span>';
+      if (t3Headline) t3Headline.innerHTML = '<span class="old-struck">단순 반복 업무</span> ➔ 탐색적·경험 기반 테스팅 집중';
     } else {
-      if (t3Top) t3Top.textContent = '기존 수동 검증 소요 시간';
-      if (t3Prefix) t3Prefix.textContent = '최소';
-      if (t3Hero) {
-        t3Hero.textContent = '수동 8시간+';
-        t3Hero.style.color = '#ff9f0a';
-      }
-      if (t3BatteryLabel) {
-        animateTimeMorph(t3BatteryLabel, '완주 (2h)', '8h 00m');
-        t3BatteryLabel.style.color = '#ff9f0a';
-      }
-      if (t3BatteryPill) t3BatteryPill.style.borderColor = '#ff9f0a';
-      if (t3BatteryBar) {
-        t3BatteryBar.style.background = '#ff9f0a';
-        t3BatteryBar.style.boxShadow = '0 0 6px rgba(255,159,10,0.4)';
-        t3BatteryBar.style.width = '100%';
-      }
-      if (t3BadgeWrap) t3BadgeWrap.innerHTML = '<span class="manual-center-badge warn">1 Man-Day (하루 전담 풀 소진)</span>';
-      if (t3Headline) t3Headline.textContent = '꼬박 하루 종일 소요 (8시간+)';
-      if (t3Subtext) t3Subtext.textContent = '284개 TC를 한 명이 쉬지 않고 종일 테스트해야 간신히 완주';
+      if (t3Top) t3Top.textContent = '반복 테스트에 고갈';
+      if (t3ManualView) t3ManualView.style.display = 'flex';
+      if (t3AutoView) t3AutoView.style.display = 'none';
+      if (t3Badge) t3Badge.innerHTML = '<span class="manual-center-badge warn">단순 반복 클릭에 번아웃</span>';
+      if (t3Headline) t3Headline.textContent = '단순 반복 테스트로 테스터 에너지 소진';
     }
   }
 
   function updateTile4DOM(mode) {
     const t4Top = document.getElementById('tile4-top');
-    const t4IconWrap = document.getElementById('tile4-icon-wrap');
-    const t4Hero = document.getElementById('tile4-hero');
-    const t4Sub = document.getElementById('tile4-sub');
-    const t4BadgeWrap = document.getElementById('tile4-badge-wrap');
+    const t4ManualView = document.getElementById('tile4-manual-view');
+    const t4AutoView = document.getElementById('tile4-auto-view');
+    const t4Badge = document.getElementById('tile4-badge');
     const t4Headline = document.getElementById('tile4-headline');
-    const t4Subtext = document.getElementById('tile4-subtext');
 
     if (mode === 'auto') {
-      if (t4Top) t4Top.innerHTML = '<span class="compare-tag-old">1인 풀타임 잠식</span> ➔ <span class="compare-tag-new">QA 실투입 공수 0분</span>';
-      if (t4IconWrap) t4IconWrap.innerHTML = '<div class="apple-bolt-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="#30d158"><path d="M13 2L3 14h7v8l11-13h-8l0-7z"/></svg></div>';
-      if (t4Hero) {
-        t4Hero.textContent = '-75% 절감';
-        t4Hero.style.color = '#ffffff';
-      }
-      if (t4Sub) t4Sub.innerHTML = '<span class="old-struck" style="color:#ff9f0a !important;">수동 8시간</span> ➔ <span style="color:#30d158; font-weight:700;">자동화 2시간</span>';
-      if (t4BadgeWrap) t4BadgeWrap.innerHTML = '<span class="auto-delta-badge bolt-delta">🚀 야간·퇴근 전 무인 배치 구동</span>';
-      if (t4Headline) t4Headline.textContent = 'QA 실투입 공수 0분 (자동화 배치 완주)';
-      if (t4Subtext) t4Subtext.textContent = '점심시간이나 퇴근 전 실행 시 TestRail 리포트까지 자동 완성';
+      if (t4Top) t4Top.innerHTML = '<span class="compare-tag-old">휴먼 에러 위험</span> ➔ <span class="compare-tag-new">100% 일관된 정밀 검증 (휴먼 에러 제로)</span>';
+      if (t4ManualView) t4ManualView.style.display = 'none';
+      if (t4AutoView) t4AutoView.style.display = 'flex';
+      if (t4Badge) t4Badge.innerHTML = '<span class="auto-delta-badge">✨ 100% 오차 없는 일관된 품질</span>';
+      if (t4Headline) t4Headline.innerHTML = '<span class="old-struck">휴먼 에러 위험</span> ➔ 100% 일관된 기준으로 검증 편차 제로';
     } else {
-      if (t4Top) t4Top.textContent = 'QA 인력 투입 부담';
-      if (t4IconWrap) t4IconWrap.innerHTML = '<div class="manual-resource-icon">👤</div>';
-      if (t4Hero) {
-        t4Hero.textContent = '100% 잠식';
-        t4Hero.style.color = '#ff9f0a';
-      }
-      if (t4Sub) {
-        t4Sub.textContent = 'QA 엔지니어 1인 풀타임 (8시간)';
-        t4Sub.style.color = '#86868b';
-      }
-      if (t4BadgeWrap) t4BadgeWrap.innerHTML = '<span class="manual-center-badge warn">신규 기능 QA 올스톱</span>';
-      if (t4Headline) t4Headline.textContent = 'QA 엔지니어 1인 리소스 100% 소진';
-      if (t4Subtext) t4Subtext.textContent = '업무 시간 내내 단순 반복 클릭에 묶여 탐색적 테스트 불가';
+      if (t4Top) t4Top.textContent = '휴먼 에러 & 검증 누락 위험';
+      if (t4ManualView) t4ManualView.style.display = 'flex';
+      if (t4AutoView) t4AutoView.style.display = 'none';
+      if (t4Badge) t4Badge.innerHTML = '<span class="manual-center-badge warn">피로 누적 시 결함 누락 위험</span>';
+      if (t4Headline) t4Headline.textContent = '테스터의 피로도와 주관에 따라 검증 편차 발생';
     }
   }
 
   function updateTile5DOM(mode) {
     const t5Top = document.getElementById('tile5-top');
-    const t5Cloud = document.getElementById('tile5-cloud');
-    const t5BadgeWrap = document.getElementById('tile5-badge-wrap');
+    const t5ManualView = document.getElementById('tile5-manual-view');
+    const t5AutoView = document.getElementById('tile5-auto-view');
+    const t5Badge = document.getElementById('tile5-badge');
     const t5Headline = document.getElementById('tile5-headline');
-    const t5Subtext = document.getElementById('tile5-subtext');
 
     if (mode === 'auto') {
-      if (t5Top) t5Top.innerHTML = '<span class="compare-tag-old">순차 수기 검증</span> ➔ <span class="compare-tag-new">13개 도메인 일괄 배치 완주</span>';
-      if (t5Cloud) {
-        t5Cloud.innerHTML = '<span class="apple-suite-tag"><span class="dot"></span>로그인·온보딩 (3)</span>' +
-          '<span class="apple-suite-tag"><span class="dot"></span>피드 (8)</span>' +
-          '<span class="apple-suite-tag featured"><span class="dot"></span>글 본문·OTT (5)</span>' +
-          '<span class="apple-suite-tag"><span class="dot"></span>좋아요·반응 (2)</span>' +
-          '<span class="apple-suite-tag"><span class="dot"></span>댓글·답글 (7)</span>' +
-          '<span class="apple-suite-tag"><span class="dot"></span>마이홈·컬렉션 (13)</span>' +
-          '<span class="apple-suite-tag"><span class="dot"></span>에디터 (9)</span>' +
-          '<span class="apple-suite-tag"><span class="dot"></span>기타 6개 도메인 (18)</span>';
-      }
-      if (t5BadgeWrap) t5BadgeWrap.innerHTML = '<span class="auto-delta-badge">✨ 13개 도메인 · 67개 Suite 일괄 완주</span>';
-      if (t5Headline) t5Headline.textContent = '13개 도메인 · 67개 Suite';
-      if (t5Subtext) t5Subtext.textContent = '284개 전수 시나리오 빈틈없는 풀 커버리지 달성';
+      if (t5Top) t5Top.innerHTML = '<span class="compare-tag-old">360시간 (45일)</span> ➔ <span class="compare-tag-new">테스트 자동화 제작 속도 가속화</span>';
+      if (t5ManualView) t5ManualView.style.display = 'none';
+      if (t5AutoView) t5AutoView.style.display = 'flex';
+      if (t5Badge) t5Badge.innerHTML = '<span class="auto-delta-badge">⚡ 6.4배 초고속 제작 (84.4% 단축)</span>';
+      if (t5Headline) t5Headline.innerHTML = '<span class="old-struck">45일(360h)</span> ➔ 56시간(7일) 만에 전 영역 구축 완료';
     } else {
-      if (t5Top) t5Top.textContent = '13개 도메인 순차 수기 검증';
-      if (t5Cloud) {
-        t5Cloud.innerHTML = '<span class="apple-suite-tag manual-tag"><span class="dot manual-dot"></span>로그인 (수기)</span>' +
-          '<span class="apple-suite-tag manual-tag"><span class="dot manual-dot"></span>피드 (수기)</span>' +
-          '<span class="apple-suite-tag manual-tag"><span class="dot manual-dot"></span>글 본문 (수기)</span>' +
-          '<span class="apple-suite-tag manual-tag"><span class="dot manual-dot"></span>좋아요 (수기)</span>' +
-          '<span class="apple-suite-tag manual-tag"><span class="dot manual-dot"></span>댓글 (수기)</span>' +
-          '<span class="apple-suite-tag manual-tag"><span class="dot manual-dot"></span>마이홈 (수기)</span>' +
-          '<span class="apple-suite-tag manual-tag"><span class="dot manual-dot"></span>에디터 (수기)</span>' +
-          '<span class="apple-suite-tag manual-tag"><span class="dot manual-dot"></span>기타 6개 도메인</span>';
-      }
-      if (t5BadgeWrap) t5BadgeWrap.innerHTML = '<span class="manual-center-badge">1개씩 순차 진행 (병렬 불가)</span>';
-      if (t5Headline) t5Headline.textContent = '화면 하나하나 눈으로 확인하며 클릭';
-      if (t5Subtext) t5Subtext.textContent = '사람이 직접 근무 시간에만 실행 가능 (야간/휴일 테스트 불가)';
+      if (t5Top) t5Top.textContent = '자동화 코드 개발 필요 시간 (AI 부재 시)';
+      if (t5ManualView) t5ManualView.style.display = 'flex';
+      if (t5AutoView) t5AutoView.style.display = 'none';
+      if (t5Badge) t5Badge.innerHTML = '<span class="manual-center-badge warn">45일 소요 (360시간 장기 개발)</span>';
+      if (t5Headline) t5Headline.textContent = 'AI 없이 수작업 코딩 시 45일(360h) 소요';
     }
   }
 
@@ -1847,37 +1842,24 @@
     const t6Top = document.getElementById('tile6-top');
     const t6ManualView = document.getElementById('tile6-manual-view');
     const t6AutoView = document.getElementById('tile6-auto-view');
-    const t6BadgeWrap = document.getElementById('tile6-badge-wrap');
+    const t6Badge = document.getElementById('tile6-badge');
     const t6Headline = document.getElementById('tile6-headline');
-    const t6Stat = document.getElementById('tile6-stat');
-    const t6Subtext = document.getElementById('tile6-subtext');
 
     if (mode === 'auto') {
       if (t6Top) t6Top.innerHTML = '<span class="compare-tag-old">수기 기록 1시간+</span> ➔ <span class="compare-tag-new">TestRail API 100% 양방향 실시간 동기화</span>';
       if (t6ManualView) t6ManualView.style.display = 'none';
       if (t6AutoView) t6AutoView.style.display = 'flex';
-      if (t6BadgeWrap) t6BadgeWrap.innerHTML = '<span class="auto-delta-badge purple-delta">⚡ 수기 기록 0분 · 리포트 100% 자동 완성</span>';
-      if (t6Headline) t6Headline.innerHTML = '<span class="old-struck">수기 284회 클릭</span> ➔ TestRail 100% 자동 연동';
-      if (t6Stat) {
-        t6Stat.textContent = '수기 기록 0건 · 리포트 자동 완성 (240건 즉시 반영)';
-        t6Stat.style.color = '#bf5af2';
-      }
-      if (t6Subtext) t6Subtext.textContent = '240건 실행 결과 실시간 양방향 연동, 수기 누락 위험 제로';
+      if (t6Badge) t6Badge.innerHTML = '<span class="auto-delta-badge purple-delta">⚡ 수기 0분 · 리포트 100% 자동 완성</span>';
+      if (t6Headline) t6Headline.innerHTML = '<span class="old-struck">수기 1시간+</span> ➔ TestRail API 실시간 100% 자동 동기화';
     } else {
       if (t6Top) t6Top.textContent = 'TestRail 결과 수기 기입';
       if (t6ManualView) t6ManualView.style.display = 'flex';
       if (t6AutoView) t6AutoView.style.display = 'none';
-      if (t6BadgeWrap) t6BadgeWrap.innerHTML = '<span class="manual-center-badge warn">결과 누락 위험 &amp; 피로도 가중</span>';
+      if (t6Badge) t6Badge.innerHTML = '<span class="manual-center-badge warn">결과 누락 위험 &amp; 피로도 가중</span>';
       if (t6Headline) t6Headline.textContent = 'TestRail 284개 결과 수기 입력';
-      if (t6Stat) {
-        t6Stat.textContent = '수기 기록 284건 · 리포트 수기 작성';
-        t6Stat.style.color = '#ff9f0a';
-      }
-      if (t6Subtext) t6Subtext.textContent = '결과 누락, 스크린샷 수동 캡처의 번거로움, 리포팅 즉시성 결여';
     }
   }
 
-  /* Main Switch Apple Compare Mode with Staggered Keynote Morph Effect */
   window.setAppleCompareMode = function (mode, e) {
     if (e && e.stopPropagation) e.stopPropagation();
     if (mode === 'basic') mode = 'auto'; // backward compatibility
@@ -2108,80 +2090,332 @@
 
 
   /* ========================================================================
-     ThingsBook QA Step Switcher for Category 03 (YAML & Screen Mapping)
+     ThingsBook QA Step Switcher & Progressive YAML Typing Engine (Category 03)
      ======================================================================== */
-  window.switchYamlStep = function (stepIdx) {
-    const btns = document.querySelectorAll('.yaml-step-btn');
-    btns.forEach((btn, idx) => {
-      btn.classList.toggle('active', idx === stepIdx);
-    });
+  const manualYamlSnippets = {
+    step0: [
+      "#C12253244",
+      "# [OTT 글감 검색 확인]",
+      "# 0. 로그인 상태로 앱 진입",
+      "- launchApp:",
+      "    appId: com.navercorp.article.ios"
+    ],
+    step1: [
+      "",
+      '# 1. GNB "+" Create 버튼 선택',
+      '- tapOn: "tabPlus"',
+      "",
+      "- waitForAnimationToEnd:",
+      "    timeout: 3000"
+    ],
+    step2: [
+      "",
+      '# 2. 컬렉션 리스트에서 "NamAuto_Movie" 선택 (하단 탭바 겹침 방지 스와이프)',
+      "- scrollUntilVisible:",
+      "    element:",
+      '      text: "NamAuto_Movie"',
+      "    direction: DOWN",
+      "    timeout: 15000",
+      "",
+      "- swipe:",
+      '    start: "50%, 65%"',
+      '    end: "50%, 50%"',
+      "",
+      "- waitForAnimationToEnd:",
+      "    timeout: 1500",
+      "",
+      "- extendedWaitUntil:",
+      '    visible: "NamAuto_Movie"',
+      "    timeout: 5000",
+      "",
+      '- tapOn: "NamAuto_Movie"',
+      "",
+      "- waitForAnimationToEnd:",
+      "    timeout: 3000",
+      "",
+      "- extendedWaitUntil:",
+      '    visible: "iconCollectionFold"',
+      "    timeout: 15000"
+    ],
+    step3: [
+      "",
+      '# 3. 글쓰기 에디터 글감 추가 [+] 버튼 클릭',
+      '- tapOn: "plus"',
+      "",
+      "- waitForAnimationToEnd:",
+      "    timeout: 3000"
+    ],
+    step4: [
+      "",
+      '# 4. OTT 글감 검색 화면 진입 및 "The Shawshank Redemption" 검색',
+      "- extendedWaitUntil:",
+      '    visible: "Search movie or TV show"',
+      "    timeout: 15000",
+      "",
+      '- inputText: "The Shawshank Redemption"',
+      "",
+      "- extendedWaitUntil:",
+      '    visible: ".*(Reviewed|1994).*"',
+      "    timeout: 15000"
+    ]
+  };
 
-    // Update screen placeholder / image text
-    const stepDescs = [
-      'Step 0·1: 앱 실행(로그인 가드 확인) 후 GNB 중앙 Plus(+) Create 버튼 탭',
-      'Step 2: 컬렉션 리스트 스크롤(하단 탭바 겹침 방지 스와이프) 후 "NamAuto_Movie" 진입',
-      'Step 3: 글쓰기 에디터 진입 후 글감 추가 Plus(+) 버튼 클릭',
-      'Step 4: OTT 글감 검색 화면에서 "The Shawshank Redemption" 검색 및 노출 검증'
-    ];
-    const stepPaths = [
-      './media/yaml_screen_step1.png',
-      './media/yaml_screen_step2.png',
-      './media/yaml_screen_step3.png',
-      './media/yaml_screen_step4.png'
-    ];
-    const stepTitles = [
-      '스텝 0·1: 앱 진입 & GNB [+] 버튼 탭 화면',
-      '스텝 2: 컬렉션 "NamAuto_Movie" 선택 화면',
-      '스텝 3: 에디터 글감 추가 [+] 버튼 화면',
-      '스텝 4: OTT 검색창 타이핑 및 결과 검증 화면'
-    ];
+  const manualStepImages = {
+    0: './media/sample_manual_step1.PNG',
+    1: './media/sample_manual_step1.PNG',
+    2: './media/sample_manual_step2.PNG',
+    3: './media/sample_manual_step3.PNG',
+    4: './media/sample_manual_step4.PNG'
+  };
 
-    const slotTitle = document.getElementById('yaml-mockup-slot-title');
-    const slotDesc = document.getElementById('yaml-mockup-slot-desc');
-    const slotPath = document.getElementById('yaml-mockup-slot-path');
+  let manualYamlCurrentStep = 0;
+  let manualYamlTypingTimer = null;
+
+  function escapeHtmlManualYaml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function highlightYamlLineHtml(line) {
+    if (line === undefined || line === null) return '';
+    const trimmed = line.trim();
+    if (!trimmed) return '&nbsp;';
+    if (trimmed.startsWith('#')) {
+      return `<span style="color: #6a9955;">${escapeHtmlManualYaml(line)}</span>`;
+    }
+    // Command line: - command: or - command: "value"
+    const cmdMatch = line.match(/^(\s*-\s*)([a-zA-Z0-9_]+):(\s*)(.*)$/);
+    if (cmdMatch) {
+      const prefix = escapeHtmlManualYaml(cmdMatch[1]);
+      const cmd = escapeHtmlManualYaml(cmdMatch[2]);
+      const sp = escapeHtmlManualYaml(cmdMatch[3]);
+      let rest = cmdMatch[4];
+      let restHtml = '';
+      if (rest.startsWith('"') && rest.endsWith('"')) {
+        restHtml = `<span style="color: #ce9178;">${escapeHtmlManualYaml(rest)}</span>`;
+      } else if (/^\d+$/.test(rest)) {
+        restHtml = `<span style="color: #b5cea8;">${escapeHtmlManualYaml(rest)}</span>`;
+      } else if (['DOWN', 'UP', 'LEFT', 'RIGHT', 'true', 'false'].includes(rest)) {
+        restHtml = `<span style="color: #4ec9b0;">${escapeHtmlManualYaml(rest)}</span>`;
+      } else if (rest) {
+        restHtml = `<span style="color: #ce9178;">${escapeHtmlManualYaml(rest)}</span>`;
+      }
+      return `${prefix}<span style="color: #4ec9b0;">${cmd}</span>:${sp}${restHtml}`;
+    }
+    // Subkey line: key: value
+    const keyMatch = line.match(/^(\s*)([a-zA-Z0-9_]+):(\s*)(.*)$/);
+    if (keyMatch) {
+      const indent = escapeHtmlManualYaml(keyMatch[1]);
+      const key = escapeHtmlManualYaml(keyMatch[2]);
+      const sp = escapeHtmlManualYaml(keyMatch[3]);
+      let rest = keyMatch[4];
+      let restHtml = '';
+      if (rest.startsWith('"') && rest.endsWith('"')) {
+        restHtml = `<span style="color: #ce9178;">${escapeHtmlManualYaml(rest)}</span>`;
+      } else if (/^\d+$/.test(rest)) {
+        restHtml = `<span style="color: #b5cea8;">${escapeHtmlManualYaml(rest)}</span>`;
+      } else if (['DOWN', 'UP', 'LEFT', 'RIGHT', 'true', 'false'].includes(rest)) {
+        restHtml = `<span style="color: #4ec9b0;">${escapeHtmlManualYaml(rest)}</span>`;
+      } else if (rest) {
+        restHtml = `<span style="color: #ce9178;">${escapeHtmlManualYaml(rest)}</span>`;
+      }
+      return `${indent}<span style="color: #9cdcfe;">${key}</span>:${sp}${restHtml}`;
+    }
+    return escapeHtmlManualYaml(line);
+  }
+
+  function getCumulativeLinesUpTo(stepNum) {
+    let lines = [...manualYamlSnippets.step0];
+    for (let s = 1; s <= stepNum; s++) {
+      if (manualYamlSnippets['step' + s]) {
+        lines = lines.concat(manualYamlSnippets['step' + s]);
+      }
+    }
+    return lines;
+  }
+
+  function renderManualYamlLinesInstant(preEl, lines) {
+    if (!preEl) return;
+    preEl.innerHTML = lines.map(line => {
+      const html = highlightYamlLineHtml(line);
+      return `<div class="yaml-code-row" style="min-height: 1.4em;">${html}</div>`;
+    }).join('');
+  }
+
+  window.renderManualYamlDefault = function () {
+    if (manualYamlTypingTimer) {
+      clearTimeout(manualYamlTypingTimer);
+      manualYamlTypingTimer = null;
+    }
+    manualYamlCurrentStep = 0;
+    const preEl = document.getElementById('manual-yaml-code-pre');
+    if (preEl) {
+      renderManualYamlLinesInstant(preEl, manualYamlSnippets.step0);
+    }
+    const badgeEl = document.getElementById('yaml-sync-badge');
+    if (badgeEl) {
+      badgeEl.textContent = '● Ready';
+      badgeEl.style.color = '#30d158';
+    }
     const slotImg = document.getElementById('yaml-mockup-slot-img');
-
-    if (slotTitle) slotTitle.textContent = stepTitles[stepIdx] || '';
-    if (slotDesc) slotDesc.textContent = stepDescs[stepIdx] || '';
-    if (slotPath) slotPath.textContent = stepPaths[stepIdx] || '';
     if (slotImg) {
-      slotImg.src = stepPaths[stepIdx] || stepPaths[0];
+      slotImg.src = manualStepImages[0];
       slotImg.style.display = 'block';
+      slotImg.style.opacity = '1';
+    }
+    // Update button states
+    const resetBtn = document.getElementById('yaml-step-btn-reset');
+    if (resetBtn) resetBtn.classList.add('active');
+    for (let s = 1; s <= 4; s++) {
+      const btn = document.getElementById(`yaml-step-btn-${s}`);
+      if (btn) btn.classList.remove('active');
+    }
+    const scrollEl = document.getElementById('manual-yaml-code-scroll');
+    if (scrollEl) scrollEl.scrollTop = 0;
+  };
+
+  window.switchYamlStep = function (stepIdx) {
+    if (manualYamlTypingTimer) {
+      clearTimeout(manualYamlTypingTimer);
+      manualYamlTypingTimer = null;
     }
 
-    // Highlight corresponding YAML lines
-    const codeLines = document.querySelectorAll('.yaml-code-step');
-    codeLines.forEach((el, idx) => {
-      const isActive = idx === stepIdx;
-      el.classList.toggle('active-highlight', isActive);
-      if (isActive) {
-        el.style.background = 'rgba(255,255,255,0.08)';
-        el.style.borderLeft = '3px solid #0071e3';
-        // Smoothly scroll active step into view in the IDE scroll container
-        const scrollContainer = el.closest('.ide-code-scroll');
-        if (scrollContainer) {
-          const topPos = el.offsetTop - scrollContainer.offsetTop;
-          scrollContainer.scrollTo({ top: Math.max(0, topPos - 12), behavior: 'smooth' });
+    if (stepIdx === 0) {
+      window.renderManualYamlDefault();
+      return;
+    }
+
+    // Update buttons
+    const resetBtn = document.getElementById('yaml-step-btn-reset');
+    if (resetBtn) resetBtn.classList.remove('active');
+    for (let s = 1; s <= 4; s++) {
+      const btn = document.getElementById(`yaml-step-btn-${s}`);
+      if (btn) btn.classList.toggle('active', s === stepIdx);
+    }
+
+    // Update iPhone screenshot with smooth fade
+    const slotImg = document.getElementById('yaml-mockup-slot-img');
+    if (slotImg) {
+      const targetSrc = manualStepImages[stepIdx] || manualStepImages[1];
+      slotImg.style.opacity = '0.4';
+      setTimeout(() => {
+        slotImg.src = targetSrc;
+        slotImg.style.opacity = '1';
+      }, 100);
+    }
+
+    const preEl = document.getElementById('manual-yaml-code-pre');
+    const scrollEl = document.getElementById('manual-yaml-code-scroll');
+    const badgeEl = document.getElementById('yaml-sync-badge');
+    if (!preEl) return;
+
+    // Base lines to keep immediately (everything up to stepIdx - 1)
+    const baseLines = getCumulativeLinesUpTo(stepIdx - 1);
+    renderManualYamlLinesInstant(preEl, baseLines);
+
+    // Lines to type for this step
+    const typingLines = manualYamlSnippets['step' + stepIdx] || [];
+    if (typingLines.length === 0) {
+      manualYamlCurrentStep = stepIdx;
+      return;
+    }
+
+    if (badgeEl) {
+      badgeEl.textContent = '⚡ Typing...';
+      badgeEl.style.color = '#ff9f0a';
+    }
+
+    let lineIdx = 0;
+    let charIdx = 0;
+    let activeLineEl = document.createElement('div');
+    activeLineEl.className = 'yaml-code-row typing-active';
+    activeLineEl.style.minHeight = '1.4em';
+    preEl.appendChild(activeLineEl);
+
+    function typeNextKeystroke() {
+      if (lineIdx >= typingLines.length) {
+        // Typing finished
+        if (badgeEl) {
+          badgeEl.textContent = '● Maestro (PASS)';
+          badgeEl.style.color = '#30d158';
         }
-      } else {
-        el.style.background = 'transparent';
-        el.style.borderLeft = '3px solid transparent';
+        manualYamlCurrentStep = stepIdx;
+        if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+        return;
       }
-    });
+
+      const curLine = typingLines[lineIdx];
+
+      // Empty line check
+      if (!curLine.trim()) {
+        activeLineEl.innerHTML = '&nbsp;';
+        lineIdx++;
+        charIdx = 0;
+        activeLineEl = document.createElement('div');
+        activeLineEl.className = 'yaml-code-row';
+        activeLineEl.style.minHeight = '1.4em';
+        preEl.appendChild(activeLineEl);
+        manualYamlTypingTimer = setTimeout(typeNextKeystroke, 10);
+        return;
+      }
+
+      if (charIdx < curLine.length) {
+        charIdx++;
+        activeLineEl.textContent = curLine.substring(0, charIdx);
+        const cursor = document.createElement('span');
+        cursor.textContent = '▋';
+        cursor.style.color = '#0071e3';
+        cursor.style.marginLeft = '2px';
+        activeLineEl.appendChild(cursor);
+
+        if (scrollEl) {
+          scrollEl.scrollTop = scrollEl.scrollHeight;
+        }
+
+        // Snappy typing speed: 8ms per char
+        manualYamlTypingTimer = setTimeout(typeNextKeystroke, 8);
+      } else {
+        // Line complete -> apply syntax highlighting
+        activeLineEl.innerHTML = highlightYamlLineHtml(curLine);
+        lineIdx++;
+        charIdx = 0;
+
+        if (lineIdx < typingLines.length) {
+          activeLineEl = document.createElement('div');
+          activeLineEl.className = 'yaml-code-row';
+          activeLineEl.style.minHeight = '1.4em';
+          preEl.appendChild(activeLineEl);
+          manualYamlTypingTimer = setTimeout(typeNextKeystroke, 20);
+        } else {
+          // All lines completed!
+          if (badgeEl) {
+            badgeEl.textContent = '● Maestro (PASS)';
+            badgeEl.style.color = '#30d158';
+          }
+          manualYamlCurrentStep = stepIdx;
+          if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+        }
+      }
+    }
+
+    typeNextKeystroke();
   };
 
   window.switchYamlCodeTab = function (tabType) {
     const tabs = document.querySelectorAll('.yaml-tab-btn');
     tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-tab') === tabType));
-
-    const ottCode = document.getElementById('yaml-code-ott');
-    const bookCode = document.getElementById('yaml-code-book');
-    const sessionCode = document.getElementById('yaml-code-session');
-
-    if (ottCode) ottCode.style.display = tabType === 'ott' ? 'block' : 'none';
-    if (bookCode) bookCode.style.display = tabType === 'book' ? 'block' : 'none';
-    if (sessionCode) sessionCode.style.display = tabType === 'session' ? 'block' : 'none';
   };
+
+  // Initialize Category 03 default state when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(window.renderManualYamlDefault, 100);
+    });
+  } else {
+    setTimeout(window.renderManualYamlDefault, 100);
+  }
 
   // ========================================================================
   // ADR Specification Interactive Inspector (Category 04: AITA & AI)
@@ -2414,7 +2648,7 @@
    STEP 01: STEP 4 IPHONE 3-IMAGE CAROUSEL & LIGHTBOX
    ========================================================================== */
 const stepIphoneImgs = [
-  { src: './media/sample_realiphone_wda_accept.PNG', alt: '실제 iPhone 12 개발자 앱 신뢰(Trust) 승인 화면', caption: '▶ 1단계: 설정 > 일반 > VPN 및 기기 관리 > 개발자 앱 신뢰(Trust) 승인' },
+  { src: './media/sample_iphone_developer.PNG', alt: '실제 iPhone 12 개발자 앱 신뢰(Trust) 승인 화면', caption: '▶ 1단계: 설정 > 일반 > VPN 및 기기 관리 > 개발자 앱 신뢰(Trust) 승인' },
   { src: './media/sample_realiphone_wda_accept2.PNG', alt: '실제 iPhone 12 WDA 인증서 신뢰 완료 화면', caption: '▶ 2단계: WDA 개발자 인증서 신뢰 승인 완료 및 개발자 모드 승인' },
   { src: './media/sample_realiphone_wda_install.PNG', alt: '실제 iPhone 12 홈 화면에 WDA 상주 에이전트 설치 확인', caption: '▶ 3단계: 실제 iPhone 12 홈 화면에 WebDriverAgentRunner 상주 에이전트 설치 완료' }
 ];
@@ -2474,8 +2708,8 @@ window.step3Next = window.step4Next;
 
 window.openCurrentStep4IphoneLightbox = function () {
   const target = stepIphoneImgs[currentStepIphoneIdx] || stepIphoneImgs[0];
-  if (typeof window.openImageLightbox === 'function') {
-    window.openImageLightbox(target.src, target.alt);
+  if (typeof window.openImageInLightbox === 'function') {
+    window.openImageInLightbox(target.src);
   }
 };
 window.openCurrentStep3IphoneLightbox = window.openCurrentStep4IphoneLightbox;
@@ -2485,7 +2719,7 @@ window.openCurrentStep3IphoneLightbox = window.openCurrentStep4IphoneLightbox;
    STEP 01: REAL DEVICE SETUP SLIDER / PAGER CONTROLLER
    ========================================================================== */
 var currentSetupStep = 0;
-var totalSetupSteps = 6;
+var totalSetupSteps = 7;
 
 function setSetupStep(idx) {
   if (idx < 0) idx = 0;
@@ -2603,8 +2837,8 @@ function inspectNext(e) {
 
 function openCurrentInspectLightbox() {
   var item = inspectScreens[currentInspectIdx];
-  if (typeof openImageLightbox === "function") {
-    openImageLightbox(item.src, item.title);
+  if (typeof window.openImageInLightbox === "function") {
+    window.openImageInLightbox(item.src);
   }
 }
 
@@ -2718,3 +2952,296 @@ window.openCurrentInspectLightbox = openCurrentInspectLightbox;
       window.openWebF12Lightbox(e);
     }
   };
+
+
+    /* ========================================================================
+     SLIDE 05: APPLE-STYLE 4-STEP BATCH PIPELINE CONTROLLER
+     ======================================================================== */
+  const BATCH_REAL_REGRESSION_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Thingsbook iOS APP Real Regression All Suites" verbose="1">
+    <test name="Real Regression All Suites">
+        <classes>
+            <class name="Thingsbook.iOS_APP.Regression.Test_01_Sign_up_Login_Onboarding.Suite_001_회원가입"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_01_Sign_up_Login_Onboarding.Suite_002_연령_확인"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_01_Sign_up_Login_Onboarding.Suite_003_이메일_수집_인증"/>
+
+            <class name="Thingsbook.iOS_APP.Regression.Test_01_Sign_up_Login_Onboarding.Suite_005_프로필_입력"/>
+
+            <class name="Thingsbook.iOS_APP.Regression.Test_01_Sign_up_Login_Onboarding.Suite_007_Login"/>
+
+
+
+            <class name="Thingsbook.iOS_APP.Regression.Test_02_Service_Home.Suite_001_포스트_피드"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_02_Service_Home.Suite_002_팔로우_추천_유저_리스트"/>
+
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_001_Collection_생성"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_002_Collection_선택"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_003_생성된_Collection_없는_경우"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_004_생성된_Collection_있는_경우"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_005_Collection_변경"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_006_OTT"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_007_Book"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_008_Check_in"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_009_Webtoon"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_010_날짜_무드"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_011_Spotify"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_012_본문_영역"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_03_Editor.Suite_013_글_수정하기"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_04_End.Suite_001_인터렉션_및_헤더"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_04_End.Suite_002_기본_정보"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_04_End.Suite_003_본문"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_04_End.Suite_004_피드백"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_04_End.Suite_005_댓글_페이지"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_04_End.Suite_006_View_Post_원문보기_버튼"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_05_글감_엔드.Suite_001_글감_엔드"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_001_My_Home"/>
+
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_003_Profile"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_004_본인_Home_공개설정_필터"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_005_Posts"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_006_뷰모드_타임라인뷰_Default"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_007_뷰모드_그리드뷰"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_008_Empty_Case"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_009_Collection_탭"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_010_뷰모드별_팝업노트_확인"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_011_본인_Home_Create"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_012_Empty_Case"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_013_타인_Home_Add_버튼"/>
+
+
+
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_017_프로필_정보_변경_화면"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_06_My_Home.Suite_018_테마_변경"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_07_Collections_상세.Suite_001_본인_Collections"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_07_Collections_상세.Suite_002_타인_Collections"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_08_Notifications.Suite_001_Notification_Tab"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_08_Notifications.Suite_002_Notification_Tab"/>
+
+            <class name="Thingsbook.iOS_APP.Regression.Test_09_Settings.Suite_001_Settings"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_09_Settings.Suite_002_Account"/>
+
+            <class name="Thingsbook.iOS_APP.Regression.Test_09_Settings.Suite_004_Find_Friends"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_09_Settings.Suite_005_Notifications"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_09_Settings.Suite_006_Privacy_and_Permissions_Media_Help_About_Log_out"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_09_Settings.Suite_007_서비스_소개_페이지"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_10_Search.Suite_001_Search"/>
+            <class name="Thingsbook.iOS_APP.Regression.Test_11_Keep.Suite_001_Keep"/>
+
+
+        </classes>
+    </test>
+</suite>`;
+
+  const BATCH_TESTRAIL_JAVA = "package Thingsbook.iOS.Common_Setup;\n\nimport java.io.ByteArrayOutputStream;\nimport java.io.OutputStream;\nimport java.io.PrintStream;\nimport java.io.PrintWriter;\nimport java.io.StringWriter;\nimport java.lang.reflect.Method;\nimport java.nio.charset.StandardCharsets;\nimport java.text.SimpleDateFormat;\nimport java.util.ArrayList;\nimport java.util.Date;\nimport java.util.List;\nimport java.util.logging.Level;\nimport java.util.logging.Logger;\n\nimport org.testng.ITestResult;\nimport org.testng.Reporter;\nimport org.testng.annotations.AfterMethod;\nimport org.testng.annotations.AfterSuite;\nimport org.testng.annotations.BeforeClass;\nimport org.testng.annotations.BeforeMethod;\nimport org.testng.annotations.BeforeSuite;\nimport org.testng.annotations.Listeners;\n\nimport com.codepine.api.testrail.TestRail;\nimport com.codepine.api.testrail.model.Plan;\nimport com.codepine.api.testrail.model.Project;\nimport com.codepine.api.testrail.model.Suite;\nimport com.nts.sqa.support.api.TestRailAPI;\n\nimport Thingsbook.iOS.Execution.MaestroRuntimeTestNgListener;\nimport Thingsbook.iOS.Execution.MaestroSuiteBatchExecutor;\nimport Thingsbook.iOS.Execution.annotation.TestRailCase;\n\n/**\n * Real Regression base setup class for Thingsbook iOS APP with TestRail API integration.\n *\n * <p>Modeled after OpenTalk's proven TestRail setup ({@code Opentalk_React_TR_Setup})\n * and adapted for native iOS mobile automation (headless / browser dependencies removed):\n * <ul>\n *   <li><b>Project:</b> {@code ThingsBook}</li>\n *   <li><b>Suite:</b> {@code [App] ThingsBook Regression}</li>\n *   <li><b>Run:</b> {@code 20261027_AutoTest_iOS_Regression} (override with {@code thingsbook.tr.runName})</li>\n *   <li><b>Manual Blank Cases:</b> Maintained as {@code Untested} in TestRail (no result submitted)</li>\n *   <li><b>Detailed Comments:</b> Extracted Maestro steps, console output, device info, and timings</li>\n * </ul>\n * </p>\n */\n@Listeners(MaestroRuntimeTestNgListener.class)\npublic abstract class Thingsbook_iOS_APP_Real_Regression_Setup extends Setup {\n\n    private static final Logger LOG = Logger.getLogger(Thingsbook_iOS_APP_Real_Regression_Setup.class.getName());\n\n    private static final String DEFAULT_TESTRAIL_PLAN_NAME = \"20261106_AutoTest_iOS_Regression\";\n    private static final String DEFAULT_TESTRAIL_RUN_NAME = \"20261106_ThingsBook_iOS_Regression\";\n    private static final String DEFAULT_PROJECT_NAME = \"ThingsBook\";\n    private static final String DEFAULT_SUITE_NAME = \"[App] ThingsBook Regression\";\n    private static final String TESTRAIL_BASE_URL = \"https://sqa.navercorp.com/testrail\";\n    private static final String TESTRAIL_USER = \"xxxxxx\";\n    private static final String TESTRAIL_PASSWORD = \"xxxxxx\";\n    private static final String FALLBACK_TESTRAIL_USER = \"xxxxxx\";\n    private static final String FALLBACK_TESTRAIL_PASSWORD = \"xxxxxx\";\n\n    private static final Object TR_LOCK = new Object();\n    private static final Object SYS_STREAM_LOCK = new Object();\n\n    private static final ThreadLocal<ByteArrayOutputStream> THREAD_LOCAL_OUTPUT_CAPTURE = new ThreadLocal<>();\n    private static final ThreadLocal<Long> THREAD_LOCAL_START_TIME = new ThreadLocal<>();\n\n    private static volatile boolean streamsInstalled = false;\n    private static volatile PrintStream originalSysOut;\n    private static volatile PrintStream originalSysErr;\n\n    public static TestRailAPI tr;\n    public String message = null;\n\n    public String planName = DEFAULT_TESTRAIL_PLAN_NAME;\n    public String projectName = DEFAULT_PROJECT_NAME;\n    public String suiteName = DEFAULT_SUITE_NAME;\n    public String runName = DEFAULT_TESTRAIL_RUN_NAME;\n\n    private static volatile int sharedPlanId = -1;\n    private static volatile int sharedRunId = -1;\n    private static volatile TestRailRunCaseResolver.RunCaseIndex sharedTestRailRunIndex;\n    private static volatile TestRail sharedTestRailClient;\n    private static volatile boolean trInitialized = false;\n\n    // -----------------------------------------------------------------------\n    // Suite Lifecycle (TestRail Connection & Plan/Run Resolution)\n    // -----------------------------------------------------------------------\n}";
+
+  const batchSteps = [
+    {
+      type: 'video',
+      video: 'media/sample_iDE_Run_Test_03_iOS_Suite_006_OTT.mov',
+      pill: 'STEP 01',
+      title: '01. YAML 단건 실기기 정상 실행 검증 (OTT Suite 006)',
+      sub: 'AITA로 생성한 YAML 테스트 코드가 실제 실기기에서 정상으로 PASS까지 도달하는지 즉각 확인',
+      desc: 'AITA 에이전트가 완성한 선언형 YAML 스크립트가 실제 iPhone 환경에서 예외나 타임아웃 없이 100% 정상 PASS 동작을 완료하는지 단건 실행으로 확인합니다. 요소 탐색 속성, 스크롤 보정, 애니메이션 대기 등 실기기 방어 룰이 안정적으로 적용되었는지 운영 승격 전 단건으로 즉각 피드백을 확보합니다.',
+      chips: [
+        'AITA 생성 YAML 100% 동작 검증',
+        'sample_iDE_Run 실기기 단건 스모크 피드백',
+        '실기기 정상 PASS 완주 확인'
+      ]
+    },
+    {
+      type: 'image',
+      image: 'media/sample_eclipse_dev_regression2.png',
+      pill: 'STEP 02',
+      title: '02. Dev_Regression 사전 검증',
+      sub: '동작 확인된 YAML 코드를 Dev_Regression 사전 검증용 Suite에서 검증 · 승격 프로세스',
+      desc: 'Dev_Regression에서 단건 스모크 테스트로 실기기 동작을 100% 검증한 후 운영 코드로 승격합니다. 안정성이 입증되지 않은 스크립트가 운영 배치에 진입하는 것을 원천 차단하여 리그레션 스위트의 신뢰도를 최고 수준으로 유지합니다.',
+      chips: [
+        'Dev_Regression 샌드박스 검증',
+        '단건 스모크 100% 검증 후 운영 승격',
+        '리그레션 운영 스위트 오염 원천 차단'
+      ]
+    },
+    {
+      type: 'code',
+      codeTab: 'xml',
+      pill: 'STEP 03',
+      title: '03. Real_Regression Suite에 배치 적용',
+      sub: 'Thingsbook iOS APP Real Regression All Suites XML 구성 및 전체 44개 클래스 유기적 배치 융합',
+      desc: '실제 운영 회귀 테스트를 위해 TestNG XML 스위트(Thingsbook iOS APP Real Regression All Suites)로 전체 44개 Suite 클래스를 일괄 편성합니다. 회원가입/온보딩부터 에디터(OTT, 도서, Spotify), 마이홈, 알림, 설정까지 전 도메인을 공통 기본 클래스 ThingsbookRegressionSetup 및 MaestroRuntimeTestNgListener 기반으로 통합 제어합니다.',
+      chips: [
+        'ThingsbookRegressionSetup 상속',
+        '44개 Suite 클래스 XML 마스터 배치',
+        'Java TestNG Suite 엔드투엔드 일괄 완주'
+      ]
+    },
+    {
+      type: 'code',
+      codeTab: 'java',
+      pill: 'STEP 04',
+      title: '04. TestRail 실시간 양방향 API 자동 업데이트',
+      sub: 'Thingsbook_iOS_APP_Real_Regression_Setup.java 기반 실시간 매핑 및 Passed_Auto 100% 자동 기록',
+      desc: 'Thingsbook_iOS_APP_Real_Regression_Setup.java가 TestNG 실행 이벤트를 가로채어, YAML 상단에 각인된 Case ID와 매핑합니다. 실시간으로 TestRail Run #1204에 Passed_Auto 상태, 소요 시간, 스텝별 Maestro Flow 로그를 100% 자동 기록합니다 (QA 수기 입력 0분).',
+      chips: [
+        'Case ID (#C번호) 실시간 매핑',
+        'TestRail Run #1204 실시간 Passed_Auto 기록',
+        '스텝별 로그 자동 업로드 · QA 수기 0분'
+      ]
+    }
+  ];
+
+  let currentBatchStepIdx = 0;
+
+  window.switchBatchStep = function (stepIdx) {
+    if (stepIdx < 0 || stepIdx >= batchSteps.length) return;
+    currentBatchStepIdx = stepIdx;
+    const data = batchSteps[stepIdx];
+
+    // 1. Update buttons
+    const btns = document.querySelectorAll('.batch-seg-btn');
+    btns.forEach((btn, idx) => {
+      const active = (idx === stepIdx);
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+
+    // 2. Manage Media Containers (Video / Image / IDE Code)
+    const videoContainer = document.getElementById('batch-media-video');
+    const imageContainer = document.getElementById('batch-media-image');
+    const codeContainer = document.getElementById('batch-media-code');
+    const videoEl = document.getElementById('batch-main-video');
+    const imgEl = document.getElementById('batch-main-img');
+
+    if (data.type === 'video') {
+      if (videoContainer) videoContainer.style.display = 'flex';
+      if (imageContainer) imageContainer.style.display = 'none';
+      if (codeContainer) codeContainer.style.display = 'none';
+
+      if (videoEl) {
+        if (!videoEl.src.endsWith(data.video)) {
+          videoEl.src = data.video;
+        }
+        videoEl.play().catch(() => {});
+      }
+    } else if (data.type === 'code') {
+      if (videoEl) videoEl.pause();
+      if (videoContainer) videoContainer.style.display = 'none';
+      if (imageContainer) imageContainer.style.display = 'none';
+      if (codeContainer) {
+        codeContainer.style.display = 'flex';
+        codeContainer.style.opacity = '0.4';
+        setTimeout(() => { codeContainer.style.opacity = '1'; }, 50);
+      }
+
+      const xmlTab = document.getElementById('batch-ide-tab-xml');
+      const javaTab = document.getElementById('batch-ide-tab-java');
+      const xmlScroll = document.getElementById('batch-ide-scroll-xml');
+      const javaScroll = document.getElementById('batch-ide-scroll-java');
+      const metaBadge = document.getElementById('batch-ide-meta-badge');
+      const copyText = document.getElementById('batch-copy-text');
+
+      if (data.codeTab === 'java') {
+        if (xmlTab) xmlTab.classList.remove('active');
+        if (javaTab) javaTab.classList.add('active');
+        if (xmlScroll) xmlScroll.style.display = 'none';
+        if (javaScroll) javaScroll.style.display = 'block';
+        if (metaBadge) metaBadge.textContent = 'Java 17 · TestNG + TestRail API';
+        if (copyText) copyText.textContent = 'Copy Java';
+      } else {
+        if (javaTab) javaTab.classList.remove('active');
+        if (xmlTab) xmlTab.classList.add('active');
+        if (javaScroll) javaScroll.style.display = 'none';
+        if (xmlScroll) xmlScroll.style.display = 'block';
+        if (metaBadge) metaBadge.textContent = 'XML 1.0 · UTF-8 · 44 SUITES';
+        if (copyText) copyText.textContent = 'Copy XML';
+      }
+    } else {
+      // type === 'image'
+      if (videoEl) videoEl.pause();
+      if (videoContainer) videoContainer.style.display = 'none';
+      if (codeContainer) codeContainer.style.display = 'none';
+      if (imageContainer) {
+        imageContainer.style.display = 'flex';
+        if (imgEl) {
+          imgEl.style.opacity = '0.35';
+          imgEl.style.transform = 'scale(0.995)';
+          setTimeout(() => {
+            imgEl.src = data.image;
+            imgEl.alt = data.title;
+            imgEl.style.opacity = '1';
+            imgEl.style.transform = 'scale(1)';
+          }, 110);
+        }
+      }
+    }
+
+    // 3. Update Caption Card
+    const pillEl = document.getElementById('batch-caption-pill');
+    if (pillEl) pillEl.textContent = data.pill;
+
+    const titleEl = document.getElementById('batch-caption-title');
+    if (titleEl) titleEl.textContent = data.title;
+
+    const subEl = document.getElementById('batch-caption-sub');
+    if (subEl) subEl.textContent = data.sub;
+
+    const descEl = document.getElementById('batch-caption-desc');
+    if (descEl) descEl.textContent = data.desc;
+
+    const indicatorEl = document.getElementById('batch-pager-indicator');
+    if (indicatorEl) indicatorEl.textContent = `${stepIdx + 1} / ${batchSteps.length}`;
+
+    // 4. Update Chips
+    const chipsEl = document.getElementById('batch-caption-chips');
+    if (chipsEl && data.chips) {
+      chipsEl.innerHTML = data.chips.map(c => `
+        <div class="batch-chip">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>${c}</span>
+        </div>
+      `).join('');
+    }
+  };
+
+  window.prevBatchStep = function () {
+    const nextIdx = (currentBatchStepIdx - 1 + batchSteps.length) % batchSteps.length;
+    window.switchBatchStep(nextIdx);
+  };
+
+  window.nextBatchStep = function () {
+    const nextIdx = (currentBatchStepIdx + 1) % batchSteps.length;
+    window.switchBatchStep(nextIdx);
+  };
+
+  window.openBatchCurrentLightbox = function () {
+    const data = batchSteps[currentBatchStepIdx];
+    if (data && data.type === 'image' && typeof window.openImageInLightbox === 'function') {
+      window.openImageInLightbox(data.image);
+    }
+  };
+
+  window.copyBatchIdeCode = function () {
+    const isJava = (currentBatchStepIdx === 3);
+    const codeToCopy = isJava ? BATCH_TESTRAIL_JAVA : BATCH_REAL_REGRESSION_XML;
+    const btn = document.getElementById('batch-copy-btn');
+    const textEl = document.getElementById('batch-copy-text');
+    const defaultLabel = isJava ? 'Copy Java' : 'Copy XML';
+
+    if (!navigator.clipboard) {
+      const textarea = document.createElement('textarea');
+      textarea.value = codeToCopy;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    } else {
+      navigator.clipboard.writeText(codeToCopy);
+    }
+
+    if (textEl) textEl.textContent = 'Copied!';
+    if (btn) btn.classList.add('copied');
+    setTimeout(() => {
+      if (textEl) textEl.textContent = defaultLabel;
+      if (btn) btn.classList.remove('copied');
+    }, 1800);
+  };
+  window.copyBatchXmlCode = window.copyBatchIdeCode;
