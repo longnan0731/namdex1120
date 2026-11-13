@@ -23,7 +23,7 @@
     }
 
     /* ---------------------------------------------------------
-       1. APPLE SF PRO FONT ACROSS ALL DISPLAY AND CODE PANES
+       APPLE SF PRO FONT ACROSS ALL DISPLAY AND CODE PANES
        --------------------------------------------------------- */
     .stage-code,
     pre.stage-code,
@@ -47,6 +47,128 @@
     .gallery-title-text {
       font-family: 'SF Pro Text', 'SF Pro KR', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif !important;
       letter-spacing: -0.01em !important;
+    }
+
+    /* ---------------------------------------------------------
+       APPLE STYLE BACKGROUND SECTION (제작 배경 스타일)
+       --------------------------------------------------------- */
+    .splash-page-bg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #000000;
+      color: #f5f5f7;
+      text-align: center;
+      padding: 100px 24px 80px 24px;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .apple-bg-inner {
+      max-width: 1080px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .apple-bg-category {
+      font-size: 15px;
+      font-weight: 600;
+      color: #86868b;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .apple-bg-title {
+      font-size: clamp(38px, 5.2vw, 64px);
+      font-weight: 700;
+      line-height: 1.18;
+      letter-spacing: -0.025em;
+      color: #f5f5f7;
+      margin: 0 0 32px 0;
+      word-break: keep-all;
+    }
+    .apple-bg-desc {
+      font-size: clamp(16px, 1.55vw, 19.5px);
+      line-height: 1.72;
+      color: #a1a1a6;
+      max-width: 900px;
+      margin: 0 auto 52px auto;
+      letter-spacing: -0.015em;
+      word-break: keep-all;
+    }
+    .apple-bg-desc strong {
+      color: #f5f5f7;
+      font-weight: 600;
+    }
+    .nobrk {
+      white-space: nowrap !important;
+      display: inline-block;
+    }
+    .apple-bg-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      width: 100%;
+      max-width: 960px;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      padding-top: 48px;
+      margin-bottom: 50px;
+    }
+    .apple-stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .apple-stat-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #86868b;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+    .apple-stat-value {
+      font-size: clamp(26px, 2.8vw, 38px);
+      font-weight: 700;
+      color: #f5f5f7;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+    .apple-stat-caption {
+      font-size: 14px;
+      color: #86868b;
+      line-height: 1.45;
+      letter-spacing: -0.01em;
+      word-break: keep-all;
+    }
+    .apple-scroll-down-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      color: #2997ff;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 10px 20px;
+      border-radius: 980px;
+      transition: all 0.2s ease;
+    }
+    .apple-scroll-down-btn:hover {
+      background: rgba(41, 151, 255, 0.1);
+      transform: translateY(2px);
+    }
+
+    @media (max-width: 768px) {
+      .apple-bg-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding-top: 36px;
+      }
+      .nobrk {
+        white-space: normal !important;
+      }
     }
 
     /* ---------------------------------------------------------
@@ -277,13 +399,11 @@
       display: block !important;
     }
   </style>
-
 </head>
 <body>
 
   <!-- ======================================================================
        APPLE KEYNOTE HERO SPLASH COVER OVERLAY
-       Full-screen dark keynote intro with real device execution video
        ====================================================================== -->
   <div id="apple-hero-splash" class="apple-hero-splash active" role="dialog" aria-modal="true" aria-label="ThingsBook iOS Regression Test Automation Keynote Cover">
     <!-- Splash Top Sticky Navigation Bar -->
@@ -296,9 +416,10 @@
       </div>
       <div class="splash-actions">
         <button type="button" class="splash-nav-link active splash-nav-overview" id="splash-nav-p1" onclick="scrollToSplashPage(1)">01 개요</button>
-        <button type="button" class="splash-nav-link" id="splash-nav-p2" onclick="scrollToSplashPage(2)">02 실행 영상</button>
-        <button type="button" class="splash-nav-link" id="splash-nav-p3" onclick="scrollToSplashPage(3)">03 TestRail 연동</button>
-        <button type="button" class="splash-nav-link" id="splash-nav-p4" onclick="scrollToSplashPage(4)">04 iOS 앱은 어떻게</button>
+        <button type="button" class="splash-nav-link" id="splash-nav-p2" onclick="scrollToSplashPage(2)">02 제작 배경</button>
+        <button type="button" class="splash-nav-link" id="splash-nav-p3" onclick="scrollToSplashPage(3)">03 실행 영상</button>
+        <button type="button" class="splash-nav-link" id="splash-nav-p4" onclick="scrollToSplashPage(4)">04 TestRail 연동</button>
+        <button type="button" class="splash-nav-link" id="splash-nav-p5" onclick="scrollToSplashPage(5)">05 iOS 앱은 어떻게</button>
         <span class="splash-date">2026. 11. 20 워크샵 세션</span>
         <button id="splash-skip-btn" class="splash-skip-btn" onclick="closeHeroSplash()" title="스토어 홈으로 건너뛰기">건너뛰기 ✕</button>
       </div>
@@ -352,12 +473,11 @@
             <span>지금 시작하기</span>
             <span class="hero-btn-arrow">→</span>
           </button>
-          
         </div>
 
         <!-- Animated Scroll Prompt Guide -->
-        <div class="splash-scroll-prompt" onclick="scrollToSplashPage(2)" role="button" tabindex="0" title="아래로 스크롤하여 실행 영상 보기">
-          <span>스크롤하여 맥북 IDE &amp; 실기기 실행 영상 보기</span>
+        <div class="splash-scroll-prompt" onclick="scrollToSplashPage(2)" role="button" tabindex="0" title="아래로 스크롤하여 제작 배경 보기">
+          <span>스크롤하여 자동화 구축 배경 보기</span>
           <div class="scroll-prompt-mouse">
             <div class="mouse-wheel"></div>
           </div>
@@ -365,8 +485,50 @@
       </div>
     </section>
 
-    <!-- PAGE 2: Dual Real Execution Video Showcase (Left: MacBook IDE / Right: Real iPhone) -->
-    <section id="splash-page-2" class="splash-page splash-page-media">
+    <!-- PAGE 2: Apple-Inspired Minimalist Background Section (제작 배경) -->
+    <section id="splash-page-2" class="splash-page splash-page-bg">
+      <div class="apple-bg-inner">
+
+        <h2 class="apple-bg-title">
+          더 빠르게, 빈틈없이<br />
+          반복 테스트를 넘어 고부가치 테스트로
+        </h2>
+
+        <p class="apple-bg-desc">
+          ThingsBook iOS 서비스의 품질을 검증하기 위한 <span class="nobrk"><strong>리그레션 TC 완수에는 매번 최소 8시간 이상의 수동 검증이 소요되었습니다.</strong></span><br />
+          반복되는 동일 TC 수행에 따른 리소스 낭비를 해소하고, <strong>늦은 밤 빌드 제출이나 긴급 핫픽스 배포</strong> 상황에서도<br />
+          핵심 기본 기능을 지체 없이 즉각 검증할 수 있는 환경이 절실했습니다.
+        </p>
+
+        <!-- Apple Style 3-Column Comparison Metrics -->
+        <div class="apple-bg-stats-grid">
+          <div class="apple-stat-item">
+            <span class="apple-stat-label">기존 수동 검증</span>
+            <div class="apple-stat-value">최소 8시간 소요</div>
+            <p class="apple-stat-caption">전체 리그레션 테스트 완주를 위해 소요되던 집중 공수</p>
+          </div>
+          <div class="apple-stat-item">
+            <span class="apple-stat-label">반복 업무의 한계</span>
+            <div class="apple-stat-value">매번 동일 TC</div>
+            <p class="apple-stat-caption">매 배포마다 반복되는 수동 검증 피로도 해소 및 휴먼 에러 차단</p>
+          </div>
+          <div class="apple-stat-item">
+            <span class="apple-stat-label">배포 대응성</span>
+            <div class="apple-stat-value">즉각 검증</div>
+            <p class="apple-stat-caption">야간 빌드 제출 및 긴급 배포 시 2시간 내 신속한 기본 기능 신뢰도 확보</p>
+          </div>
+        </div>
+
+        <!-- Scroll down trigger to Video Showcase -->
+        <button type="button" class="apple-scroll-down-btn" onclick="scrollToSplashPage(3)">
+          <span>실제 구동 영상 보기</span>
+          <span>↓</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- PAGE 3: Dual Real Execution Video Showcase (Left: MacBook IDE / Right: Real iPhone) -->
+    <section id="splash-page-3" class="splash-page splash-page-media">
       <div class="splash-page2-inner">
         <div class="splash-page2-header">
           <h2 class="splash-page2-title">MacBook IDE &amp; Real iPhone. <span class="splash-gradient-text">동시 실시간 구동.</span></h2>
@@ -414,12 +576,11 @@
             </div>
           </div>
         </div>
-
-        </div>
+      </div>
     </section>
 
-    <!-- PAGE 3: TestRail Integration Results (Screenshot Showcase) -->
-    <section id="splash-page-3" class="splash-page splash-page-testrail">
+    <!-- PAGE 4: TestRail Integration Results (Screenshot Showcase) -->
+    <section id="splash-page-4" class="splash-page splash-page-testrail">
       <div class="splash-page3-inner">
         <div class="splash-page3-header">
           <h2 class="splash-page3-title">TestRail 실시간 연동 결과 자동화 구현한 <span class="splash-gradient-text">230 TC 실행 결과 자동 동기화.</span></h2>
@@ -481,14 +642,12 @@
               <span id="testrail-zoom-hint-text">🔍 <span id="tr-hint-num">1/2</span> 원본 고해상도 확대 (⛶)</span>
             </div>
           </div>
-
         </div>
-
-        </div>
+      </div>
     </section>
 
-    <!-- PAGE 4: Challenge - Web F12 vs Closed iOS App Environment -->
-    <section id="splash-page-4" class="splash-page splash-page-challenge">
+    <!-- PAGE 5: Challenge - Web F12 vs Closed iOS App Environment -->
+    <section id="splash-page-5" class="splash-page splash-page-challenge">
       <div class="splash-page4-inner">
         <div class="splash-page4-header">
           <h2 class="splash-page4-title">
@@ -505,7 +664,6 @@
           <!-- 1. Left: Combined Showcase (Slide 1: Web DevTools F12 <-> Slide 2: Closed & Locked iPhone) -->
           <div class="challenge-showcase-card">
             <div class="challenge-browser-window">
-              <!-- Window Titlebar with Segmented Switcher & Navigation -->
               <div class="challenge-window-titlebar">
                 <div class="window-dots">
                   <span class="w-dot red"></span>
@@ -513,7 +671,6 @@
                   <span class="w-dot green"></span>
                 </div>
 
-                <!-- Apple Segmented Tab Switcher -->
                 <div class="challenge-view-switch" role="tablist" aria-label="쇼케이스 화면 전환">
                   <button type="button" class="challenge-tab-btn active" id="ch-tab-1" onclick="switchChallengeSlide(1, event)" role="tab" aria-selected="true" title="화면 1: 브라우저 F12 (Web)">
                     <span class="tab-dot"></span> 🌐 1. 웹 브라우저 F12
@@ -523,7 +680,6 @@
                   </button>
                 </div>
 
-                <!-- Slide Navigation & Zoom Button -->
                 <div class="challenge-header-controls">
                   <div class="challenge-nav-pill">
                     <button type="button" class="ch-nav-btn prev" onclick="prevChallengeSlide(event)" title="이전 화면 (1번: 웹 F12)">‹ 이전</button>
@@ -534,9 +690,7 @@
                 </div>
               </div>
 
-              <!-- Main Viewport: Swappable Slides -->
               <div class="challenge-viewport">
-                <!-- Floating Large Arrow Buttons -->
                 <button type="button" class="challenge-arrow-btn prev" onclick="prevChallengeSlide(event)" title="이전 화면 보기" aria-label="이전 화면">‹</button>
                 <button type="button" class="challenge-arrow-btn next" onclick="nextChallengeSlide(event)" title="다음 화면 보기" aria-label="다음 화면">›</button>
 
@@ -562,18 +716,15 @@
                     <span class="url-text">Apple iPhone 12 Pro (iOS 16.5) &nbsp;—&nbsp; [보안 샌드박스 격리: 외부 UI 트리 접근 차단]</span>
                   </div>
                   <div class="challenge-stage-wrap">
-                    <!-- Left Context Card -->
                     <div class="stage-info-card left">
                       <div class="info-card-badge">🚫</div>
                       <h5 class="info-card-title">F12 개발도구 부재</h5>
                       <p class="info-card-desc">웹 브라우저와 같은 마우스 우클릭 검사가 불가능하며, 화면 터치 좌표와 요소 식별이 차단됩니다.</p>
                     </div>
 
-                    <!-- Center Real iPhone Frame -->
                     <div class="challenge-iphone-frame" title="폐쇄된 iOS 실기기 환경 (보안 샌드박스로 UI 트리 차단)">
                       <div class="splash-iphone-island"></div>
                       <div class="locked-iphone-screen">
-                        <!-- Status Bar -->
                         <div class="locked-statusbar">
                           <span class="locked-time">9:41</span>
                           <div class="locked-status-icons">
@@ -585,7 +736,6 @@
                           </div>
                         </div>
 
-                        <!-- Screen Core: Lock UI -->
                         <div class="locked-screen-core">
                           <div class="lock-halo-wrap">
                             <div class="lock-halo-pulse"></div>
@@ -618,19 +768,16 @@
                           </div>
                         </div>
 
-                        <!-- Bottom Home Bar -->
                         <div class="locked-home-bar"></div>
                       </div>
                     </div>
 
-                    <!-- Right Context Card -->
                     <div class="stage-info-card right">
                       <div class="info-card-badge">🔒</div>
                       <h5 class="info-card-title">샌드박스 (Sandboxing)</h5>
                       <p class="info-card-desc">Apple 보안 커널로 인해 실행 중인 앱의 내부 렌더링 노드에 외부 제3자 프로세스가 직접 접근할 수 없습니다.</p>
                     </div>
 
-                    <!-- Stage Bottom Caption Tag -->
                     <div class="challenge-img-tag stage-tag">
                       <span class="tag-icon">📱</span>
                       <span><strong>Closed iOS:</strong> 철통 보안 샌드박스로 외부 UI 트리 접근이 원천 차단된 폐쇄 환경</span>
@@ -702,7 +849,7 @@
       </div>
     </section>
 
-    <!-- Splash Dedicated Floating Back-to-Top Button (스플래시 화면용 우측 하단 맨위로 플로팅 버튼) -->
+    <!-- Splash Dedicated Floating Back-to-Top Button -->
     <button id="splash-floating-back-to-top" class="floating-back-to-top splash-floating-top" onclick="scrollToSplashPage(1)" title="개요 맨 위로 가기" aria-label="개요 맨 위로 가기">
       <svg class="top-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="18 15 12 9 6 15"></polyline>
@@ -719,7 +866,7 @@
         <span class="brand-te">TE</span>
       </div>
 
-      <!-- 상단 GNB: 해당 탭 이름 하나만 표시 (단일 탭 인디케이터) -->
+      <!-- 상단 GNB: 단일 탭 인디케이터 -->
       <div class="nav-single-tab-container" onclick="jumpToTop()" title="상단 카테고리 메뉴로 이동 (맨 위로)">
         <div class="nav-single-pill" id="nav-single-pill">
           <span class="nav-pill-dot"></span>
